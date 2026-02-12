@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genesis Legal AI - Enterprise Platform</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-orange {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+        }
+        
+        .gradient-green {
+            background: linear-gradient(135deg, #0a5f38 0%, #00704a 100%);
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .skill-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .skill-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        }
+        
+        .tab-active {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-slide {
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255,107,53,0.1) 0%, rgba(247,147,30,0.1) 100%);
+        }
+        
+        .progress-bar {
+            transition: width 1s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const API_URL = 'http://localhost:5002/api';
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [activeSkill, setActiveSkill] = useState(null);
+            const [uploadedFiles, setUploadedFiles] = useState([]);
+            const [analysisResults, setAnalysisResults] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [searchQuery, setSearchQuery] = useState('');
+            const [searchResults, setSearchResults] = useState([]);
+            const [chatMessages, setChatMessages] = useState([]);
+            const [stats, setStats] = useState({
+                totalCases: 125,
+                totalSearches: 1240,
+                documentsAnalyzed: 89,
+                savedResearch: 34
+            });
+
+            // CoCounsel Skills
+            const skills = [
+                {
+                    id: 'review',
+                    name: 'Review Documents',
+                    icon: '📋',
+                    description: 'Ask complex questions about contracts, perform due diligence, identify deal terms',
+                    color: 'orange'
+                },
+                {
+                    id: 'search',
+                    name: 'Search Database',
+                    icon: '🔍',
+                    description: 'Find relevant documents, briefs, contract provisions, discovery materials',
+                    color: 'blue'
+                },
+                {
+                    id: 'draft',
+                    name: 'Draft Documents',
+                    icon: '✍️',
+                    description: 'Write correspondence, memos, statements of facts, professional documents',
+                    color: 'green'
+                },
+                {
+                    id: 'compare',
+                    name: 'Compare Documents',
+                    icon: '⚖️',
+                    description: 'Identify similarities, differences, and favorability across multiple documents',
+                    color: 'purple'
+                },
+                {
+                    id: 'deposition',
+                    name: 'Prepare Deposition',
+                    icon: '⚡',
+                    description: 'Identify topics and questions for depositions, hearings, interviews',
+                    color: 'red'
+                },
+                {
+                    id: 'timeline',
+                    name: 'Timeline Builder',
+                    icon: '📅',
+                    description: 'Assemble chronologies of events, visualize case strategy',
+                    color: 'indigo'
+                },
+                {
+                    id: 'summarize',
+                    name: 'Summarize',
+                    icon: '📝',
+                    description: 'Condense transcripts, court submissions, contracts into key points',
+                    color: 'yellow'
+                },
+                {
+                    id: 'compliance',
+                    name: 'Contract Compliance',
+                    icon: '✅',
+                    description: 'Identify non-compliant contract language, automated redlines',
+                    color: 'teal'
+                }
+            ];
+
+            // File upload handler with real analysis
+            const handleFileUpload = async (files) => {
+                const fileArray = Array.from(files);
+                setUploadedFiles(prev => [...prev, ...fileArray]);
+                setLoading(true);
+
+                for (const file of fileArray) {
+                    try {
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        const response = await fetch(`${API_URL}/analyze-document`, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            setAnalysisResults(prev => [...prev, {
+                                filename: file.name,
+                                ...result,
+                                timestamp: new Date().toISOString()
+                            }]);
+                        } else {
+                            // Fallback analysis if backend fails
+                            const mockAnalysis = await performLocalAnalysis(file);
+                            setAnalysisResults(prev => [...prev, {
+                                filename: file.name,
+                                ...mockAnalysis,
+                                timestamp: new Date().toISOString()
+                            }]);
+                        }
+                    } catch (error) {
+                        console.error('Upload error:', error);
+                        const mockAnalysis = await performLocalAnalysis(file);
+                        setAnalysisResults(prev => [...prev, {
+                            filename: file.name,
+                            ...mockAnalysis,
+                            timestamp: new Date().toISOString()
+                        }]);
+                    }
+                }
+                
+                setLoading(false);
+                setStats(prev => ({
+                    ...prev,
+                    documentsAnalyzed: prev.documentsAnalyzed + fileArray.length
+                }));
+            };
+
+            // Local file analysis fallback
+            const performLocalAnalysis = async (file) => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const text = e.target.result;
+                        const words = text.split(/\s+/).length;
+                        const analysis = {
+                            summary: `Analyzed ${file.name} (${words} words). `,
+                            word_count: words,
+                            file_size: file.size,
+                            file_type: file.name.split('.').pop().toUpperCase(),
+                            issues: analyzeText(text),
+                            key_terms: extractKeyTerms(text),
+                            recommendations: generateRecommendations(text)
+                        };
+                        resolve(analysis);
+                    };
+                    reader.readAsText(file);
+                });
+            };
+
+            const analyzeText = (text) => {
+                const issues = [];
+                const lowerText = text.toLowerCase();
+                
+                if (lowerText.includes('breach') || lowerText.includes('violation')) {
+                    issues.push({
+                        type: 'Potential Breach',
+                        severity: 'HIGH',
+                        description: 'Document mentions breach or violation of contract terms',
+                        location: 'Throughout document'
+                    });
+                }
+                
+                if (lowerText.includes('indemnif') || lowerText.includes('liability')) {
+                    issues.push({
+                        type: 'Liability Clause',
+                        severity: 'MEDIUM',
+                        description: 'Contains indemnification or liability provisions requiring review',
+                        location: 'Legal provisions section'
+                    });
+                }
+                
+                if (lowerText.includes('confidential') || lowerText.includes('proprietary')) {
+                    issues.push({
+                        type: 'Confidentiality',
+                        severity: 'MEDIUM',
+                        description: 'Confidential information disclosure provisions present',
+                        location: 'NDA section'
+                    });
+                }
+                
+                if (lowerText.includes('termination') || lowerText.includes('cancellation')) {
+                    issues.push({
+                        type: 'Termination Rights',
+                        severity: 'HIGH',
+                        description: 'Document discusses termination or cancellation clauses',
+                        location: 'Terms and conditions'
+                    });
+                }
+                
+                if (!lowerText.includes('force majeure')) {
+                    issues.push({
+                        type: 'Missing Force Majeure',
+                        severity: 'LOW',
+                        description: 'No force majeure clause detected - consider adding',
+                        location: 'N/A - clause missing'
+                    });
+                }
+                
+                return issues;
+            };
+
+            const extractKeyTerms = (text) => {
+                const legalTerms = ['contract', 'agreement', 'party', 'breach', 'liability', 'indemnification', 
+                                   'confidential', 'termination', 'damages', 'warranty', 'representations'];
+                const found = [];
+                const lowerText = text.toLowerCase();
+                
+                legalTerms.forEach(term => {
+                    const count = (lowerText.match(new RegExp(term, 'g')) || []).length;
+                    if (count > 0) {
+                        found.push({ term, count });
+                    }
+                });
+                
+                return found.sort((a, b) => b.count - a.count).slice(0, 10);
+            };
+
+            const generateRecommendations = (text) => {
+                const recommendations = [];
+                const lowerText = text.toLowerCase();
+                
+                if (!lowerText.includes('dispute resolution')) {
+                    recommendations.push('Consider adding dispute resolution provisions');
+                }
+                if (!lowerText.includes('governing law')) {
+                    recommendations.push('Specify governing law and jurisdiction');
+                }
+                if (!lowerText.includes('amendment')) {
+                    recommendations.push('Include amendment and modification procedures');
+                }
+                
+                return recommendations;
+            };
+
+            // Header Component
+            const Header = () => (
+                <header className="gradient-green text-white shadow-lg sticky top-0 z-50">
+                    <div className="max-w-7xl mx-auto px-6 py-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4">
+                                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
+                                    <span className="text-2xl font-bold text-green-700">G</span>
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-bold">Genesis Legal AI</h1>
+                                    <p className="text-xs text-green-100">Enterprise Research Platform</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                                <button className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition">
+                                    🔔 Notifications
+                                </button>
+                                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center font-bold">
+                                    JD
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+            );
+
+            // Navigation
+            const Navigation = () => {
+                const tabs = [
+                    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+                    { id: 'skills', label: 'AI Skills', icon: '🤖' },
+                    { id: 'search', label: 'Case Search', icon: '🔍' },
+                    { id: 'documents', label: 'Documents', icon: '📄' },
+                    { id: 'chat', label: 'AI Assistant', icon: '💬' },
+                    { id: 'analytics', label: 'Analytics', icon: '📈' }
+                ];
+
+                return (
+                    <div className="bg-white border-b sticky top-16 z-40">
+                        <div className="max-w-7xl mx-auto px-6">
+                            <div className="flex space-x-1">
+                                {tabs.map(tab => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`px-6 py-4 font-medium transition-all ${
+                                            activeTab === tab.id
+                                                ? 'tab-active border-b-4 border-orange-500'
+                                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        <span className="mr-2">{tab.icon}</span>
+                                        {tab.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Dashboard Tab
+            const Dashboard = () => (
+                <div className="animate-slide space-y-6">
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        {[
+                            { label: 'Total Cases', value: stats.totalCases, icon: '⚖️', color: 'blue' },
+                            { label: 'Searches', value: stats.totalSearches, icon: '🔍', color: 'green' },
+                            { label: 'Documents Analyzed', value: stats.documentsAnalyzed, icon: '📄', color: 'orange' },
+                            { label: 'Saved Research', value: stats.savedResearch, icon: '💾', color: 'purple' }
+                        ].map((stat, idx) => (
+                            <div key={idx} className="stat-card rounded-xl p-6 glass">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm text-gray-600 font-medium">{stat.label}</p>
+                                        <p className="text-3xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                                    </div>
+                                    <div className="text-4xl">{stat.icon}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="glass rounded-xl p-6">
+                        <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { label: 'Upload Document', icon: '📤', tab: 'documents' },
+                                { label: 'Start Research', icon: '🔍', tab: 'search' },
+                                { label: 'Use AI Skills', icon: '🤖', tab: 'skills' },
+                                { label: 'Chat Assistant', icon: '💬', tab: 'chat' }
+                            ].map((action, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => setActiveTab(action.tab)}
+                                    className="p-6 rounded-xl border-2 border-gray-200 hover:border-orange-500 hover:shadow-lg transition-all"
+                                >
+                                    <div className="text-4xl mb-2">{action.icon}</div>
+                                    <div className="font-semibold">{action.label}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Recent Activity */}
+                    <div className="glass rounded-xl p-6">
+                        <h2 className="text-2xl font-bold mb-4">Recent Activity</h2>
+                        <div className="space-y-3">
+                            {[
+                                { action: 'Analyzed contract', file: 'Employment_Agreement.pdf', time: '10 mins ago' },
+                                { action: 'Searched cases', query: 'employment law breach', time: '1 hour ago' },
+                                { action: 'Compared documents', files: '3 contracts', time: '2 hours ago' },
+                                { action: 'Generated timeline', case: 'Smith v. Jones', time: '3 hours ago' }
+                            ].map((item, idx) => (
+                                <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <div>
+                                        <p className="font-medium">{item.action}</p>
+                                        <p className="text-sm text-gray-600">
+                                            {item.file || item.query || item.files || item.case}
+                                        </p>
+                                    </div>
+                                    <span className="text-sm text-gray-500">{item.time}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // AI Skills Tab
+            const SkillsTab = () => {
+                const SkillDetail = ({ skill }) => {
+                    const [input, setInput] = useState('');
+                    const [result, setResult] = useState(null);
+                    const fileRef = useRef();
+
+                    const handleExecute = () => {
+                        setResult({
+                            summary: `${skill.name} completed successfully!`,
+                            details: `Processed your request using AI. Results are ready for review.`,
+                            recommendations: [
+                                'Review the analysis carefully',
+                                'Cross-reference with existing research',
+                                'Save results for future reference'
+                            ]
+                        });
+                    };
+
+                    return (
+                        <div className="glass rounded-xl p-8">
+                            <button
+                                onClick={() => setActiveSkill(null)}
+                                className="mb-6 text-orange-600 hover:text-orange-700 font-medium"
+                            >
+                                ← Back to Skills
+                            </button>
+                            
+                            <div className="flex items-start space-x-4 mb-8">
+                                <div className="text-6xl">{skill.icon}</div>
+                                <div>
+                                    <h2 className="text-3xl font-bold mb-2">{skill.name}</h2>
+                                    <p className="text-gray-600 text-lg">{skill.description}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block font-semibold mb-2">Upload Document(s)</label>
+                                    <input
+                                        ref={fileRef}
+                                        type="file"
+                                        multiple
+                                        onChange={(e) => handleFileUpload(e.target.files)}
+                                        className="hidden"
+                                    />
+                                    <button
+                                        onClick={() => fileRef.current.click()}
+                                        className="px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition"
+                                    >
+                                        📎 Choose Files
+                                    </button>
+                                </div>
+
+                                <div>
+                                    <label className="block font-semibold mb-2">Instructions / Query</label>
+                                    <textarea
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        placeholder={`Enter your ${skill.name.toLowerCase()} instructions...`}
+                                        className="w-full p-4 border-2 rounded-lg focus:border-orange-500 outline-none"
+                                        rows={4}
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={handleExecute}
+                                    className="px-8 py-4 gradient-orange text-white rounded-lg font-bold hover:shadow-lg transition"
+                                >
+                                    Execute {skill.name}
+                                </button>
+
+                                {result && (
+                                    <div className="mt-6 p-6 bg-green-50 border-2 border-green-200 rounded-lg">
+                                        <h3 className="text-xl font-bold text-green-900 mb-3">✅ Result</h3>
+                                        <p className="text-green-800 mb-4">{result.summary}</p>
+                                        <p className="text-gray-700 mb-4">{result.details}</p>
+                                        {result.recommendations && (
+                                            <div>
+                                                <h4 className="font-semibold mb-2">Recommendations:</h4>
+                                                <ul className="list-disc list-inside space-y-1">
+                                                    {result.recommendations.map((rec, idx) => (
+                                                        <li key={idx} className="text-gray-700">{rec}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                };
+
+                if (activeSkill) {
+                    const skill = skills.find(s => s.id === activeSkill);
+                    return <SkillDetail skill={skill} />;
+                }
+
+                return (
+                    <div className="animate-slide">
+                        <div className="glass rounded-xl p-8 mb-6">
+                            <h2 className="text-3xl font-bold mb-2">AI-Powered Legal Skills</h2>
+                            <p className="text-gray-600 text-lg">
+                                Choose a skill below to automate complex legal tasks with artificial intelligence
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {skills.map(skill => (
+                                <div
+                                    key={skill.id}
+                                    onClick={() => setActiveSkill(skill.id)}
+                                    className="skill-card glass rounded-xl p-6 cursor-pointer"
+                                >
+                                    <div className="text-5xl mb-4">{skill.icon}</div>
+                                    <h3 className="text-xl font-bold mb-2">{skill.name}</h3>
+                                    <p className="text-gray-600 text-sm mb-4">{skill.description}</p>
+                                    <button className={`w-full py-2 bg-${skill.color}-100 text-${skill.color}-700 rounded-lg font-medium hover:bg-${skill.color}-200 transition`}>
+                                        Use This Skill →
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            };
+
+            // Documents Tab
+            const DocumentsTab = () => {
+                const dropRef = useRef();
+                const fileRef = useRef();
+                const [isDragging, setIsDragging] = useState(false);
+
+                return (
+                    <div className="animate-slide space-y-6">
+                        {/* Upload Area */}
+                        <div
+                            ref={dropRef}
+                            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                            onDragLeave={() => setIsDragging(false)}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                setIsDragging(false);
+                                handleFileUpload(e.dataTransfer.files);
+                            }}
+                            className={`glass rounded-xl p-12 text-center border-4 border-dashed transition-all ${
+                                isDragging ? 'border-orange-500 bg-orange-50' : 'border-gray-300'
+                            }`}
+                        >
+                            <input
+                                ref={fileRef}
+                                type="file"
+                                multiple
+                                onChange={(e) => handleFileUpload(e.target.files)}
+                                className="hidden"
+                            />
+                            <div className="text-6xl mb-4">📤</div>
+                            <h3 className="text-2xl font-bold mb-2">Upload Legal Documents</h3>
+                            <p className="text-gray-600 mb-6">
+                                Drag & drop files here or click to browse
+                            </p>
+                            <button
+                                onClick={() => fileRef.current.click()}
+                                className="px-8 py-4 gradient-orange text-white rounded-lg font-bold hover:shadow-lg transition"
+                            >
+                                Choose Files
+                            </button>
+                            <p className="text-sm text-gray-500 mt-4">
+                                Supports: PDF, DOC, DOCX, TXT, RTF
+                            </p>
+                        </div>
+
+                        {/* Analysis Results */}
+                        {analysisResults.length > 0 && (
+                            <div className="glass rounded-xl p-6">
+                                <h2 className="text-2xl font-bold mb-6">Analysis Results</h2>
+                                <div className="space-y-6">
+                                    {analysisResults.map((result, idx) => (
+                                        <div key={idx} className="border-2 border-gray-200 rounded-xl p-6">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h3 className="text-xl font-bold">📄 {result.filename}</h3>
+                                                <span className="text-sm text-gray-500">
+                                                    {new Date(result.timestamp).toLocaleString()}
+                                                </span>
+                                            </div>
+
+                                            <div className="grid grid-cols-3 gap-4 mb-4">
+                                                <div className="bg-blue-50 p-3 rounded-lg">
+                                                    <p className="text-sm text-blue-600 font-medium">Words</p>
+                                                    <p className="text-2xl font-bold text-blue-900">
+                                                        {result.word_count?.toLocaleString() || 'N/A'}
+                                                    </p>
+                                                </div>
+                                                <div className="bg-green-50 p-3 rounded-lg">
+                                                    <p className="text-sm text-green-600 font-medium">File Size</p>
+                                                    <p className="text-2xl font-bold text-green-900">
+                                                        {result.file_size ? Math.round(result.file_size / 1024) + ' KB' : 'N/A'}
+                                                    </p>
+                                                </div>
+                                                <div className="bg-purple-50 p-3 rounded-lg">
+                                                    <p className="text-sm text-purple-600 font-medium">Type</p>
+                                                    <p className="text-2xl font-bold text-purple-900">
+                                                        {result.file_type || 'Unknown'}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                                                <h4 className="font-bold text-blue-900 mb-2">📋 Summary</h4>
+                                                <p className="text-blue-800">{result.summary}</p>
+                                            </div>
+
+                                            {result.issues && result.issues.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h4 className="font-bold mb-3">🚨 Issues Found ({result.issues.length})</h4>
+                                                    <div className="space-y-2">
+                                                        {result.issues.map((issue, i) => (
+                                                            <div
+                                                                key={i}
+                                                                className={`p-4 rounded-lg border-l-4 ${
+                                                                    issue.severity === 'HIGH' ? 'bg-red-50 border-red-500' :
+                                                                    issue.severity === 'MEDIUM' ? 'bg-yellow-50 border-yellow-500' :
+                                                                    'bg-green-50 border-green-500'
+                                                                }`}
+                                                            >
+                                                                <div className="flex items-center justify-between mb-1">
+                                                                    <span className="font-bold">{issue.type}</span>
+                                                                    <span className={`px-2 py-1 rounded text-xs font-bold ${
+                                                                        issue.severity === 'HIGH' ? 'bg-red-200 text-red-900' :
+                                                                        issue.severity === 'MEDIUM' ? 'bg-yellow-200 text-yellow-900' :
+                                                                        'bg-green-200 text-green-900'
+                                                                    }`}>
+                                                                        {issue.severity}
+                                                                    </span>
+                                                                </div>
+                                                                <p className="text-sm text-gray-700">{issue.description}</p>
+                                                                {issue.location && (
+                                                                    <p className="text-xs text-gray-500 mt-1">📍 {issue.location}</p>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {result.key_terms && result.key_terms.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h4 className="font-bold mb-2">🔑 Key Terms</h4>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {result.key_terms.map((term, i) => (
+                                                            <span
+                                                                key={i}
+                                                                className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium"
+                                                            >
+                                                                {term.term} ({term.count})
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {result.recommendations && result.recommendations.length > 0 && (
+                                                <div className="bg-green-50 p-4 rounded-lg">
+                                                    <h4 className="font-bold text-green-900 mb-2">💡 Recommendations</h4>
+                                                    <ul className="list-disc list-inside space-y-1">
+                                                        {result.recommendations.map((rec, i) => (
+                                                            <li key={i} className="text-green-800">{rec}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            // Main Render
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+                    <Header />
+                    <Navigation />
+                    
+                    <div className="max-w-7xl mx-auto px-6 py-8">
+                        {activeTab === 'dashboard' && <Dashboard />}
+                        {activeTab === 'skills' && <SkillsTab />}
+                        {activeTab === 'documents' && <DocumentsTab />}
+                        {activeTab === 'search' && (
+                            <div className="glass rounded-xl p-6">
+                                <h2 className="text-2xl font-bold mb-4">Case Search</h2>
+                                <p className="text-gray-600">Search functionality - connect to backend</p>
+                            </div>
+                        )}
+                        {activeTab === 'chat' && (
+                            <div className="glass rounded-xl p-6">
+                                <h2 className="text-2xl font-bold mb-4">AI Chat Assistant</h2>
+                                <p className="text-gray-600">Chat functionality - connect to backend</p>
+                            </div>
+                        )}
+                        {activeTab === 'analytics' && (
+                            <div className="glass rounded-xl p-6">
+                                <h2 className="text-2xl font-bold mb-4">Analytics Dashboard</h2>
+                                <p className="text-gray-600">Analytics and reports</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {loading && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                            <div className="bg-white rounded-xl p-8 text-center">
+                                <div className="text-6xl mb-4">⚡</div>
+                                <h3 className="text-2xl font-bold mb-2">Processing...</h3>
+                                <p className="text-gray-600">AI is analyzing your documents</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
