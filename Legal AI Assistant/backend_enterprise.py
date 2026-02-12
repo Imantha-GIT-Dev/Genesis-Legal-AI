@@ -11,6 +11,9 @@ import requests
 import json
 from dotenv import load_dotenv
 import base64
+from sentence_transformers import SentenceTransformer
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 from flask_jwt_extended import (
     JWTManager,
@@ -50,6 +53,11 @@ def hash_password(password: str) -> str:
 
 def verify_password(password: str, hashed: str) -> bool:
     return pwd_context.verify(password, hashed)
+
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+
+def embed_query(text: str):
+    return embedding_model.encode(text).tolist()
 
 # =============================================================================
 # DATABASE HELPER FUNCTIONS
@@ -246,6 +254,128 @@ def generate_chat_response(message, history=None):
     
     else:
         return f"I understand you're asking about '{message}'. I can help you research this topic. Try using the Search function to find relevant cases, or tell me more about what you're looking for and I'll guide you to the right resources."
+
+
+# ==============================
+# RAG / Hybrid Search Functions
+# ==============================
+
+# --- Database connection helper ---
+def get_db_connection():
+    return psycopg2.connect(os.getenv("DATABASE_URL"))  # Make sure DATABASE_URL is set
+
+
+# --- Semantic Search using pgvector ---
+def semantic_search_cases(query_text, top_k=5):
+    query_embedding = embed_query(query_text)
+    sql = """
+    SELECT id, title, summary, full_text,
+           1 - (embedding <=> %s::vector) AS similarity
+    FROM cases
+    ORDER BY embedding <=> %s::vector
+    LIMIT %s;
+    """
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(sql, (query_embedding, query_embedding, top_k))
+    results = cur.fetchall()
+    cur.close()
+    conn.close()
+    return results
+
+
+# --- Keyword Search using tsvector ---
+def keyword_search_cases(query_text, top_k=5):
+    sql = """
+    SELECT id, title, summary, full_text,
+           ts_rank(search_vector, plainto_tsquery('english', %s)) AS rank
+    FROM cases
+    WHERE search_vector @@ plainto_tsquery('english', %s)
+    ORDER BY rank DESC
+    LIMIT %s;
+    """
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(sql, (query_text, query_text, top_k))
+    results = cur.fetchall()
+    cur.close()
+    conn.close()
+    return results
+
+
+# --- Hybrid Search (semantic + keyword) ---
+def hybrid_search_cases(query_text, top_k=7):
+    sem_results = semantic_search_cases(query_text, top_k=top_k)
+    kw_results = keyword_search_cases(query_text, top_k=top_k)
+
+    # Combine + deduplicate by case ID
+    seen_ids = set()
+    combined = []
+    for r in sem_results + kw_results:
+        if r["id"] not in seen_ids:
+            combined.append(r)
+            seen_ids.add(r["id"])
+    return combined[:top_k]
+
+
+# --- RAG Chat Endpoint ---
+@app.route("/api/chat/rag", methods=["POST"])
+def chat_rag():
+    """
+    Receives user query, performs hybrid search, 
+    and generates AI answer grounded on top cases.
+    """
+    try:
+        data = request.get_json()
+        user_query = data.get("query")
+        conversation_id = data.get("conversation_id", f"conv_{datetime.now().timestamp()}")
+
+        if not user_query:
+            return jsonify({"error": "Query is required"}), 400
+
+        # --- Step 1: Hybrid Search ---
+        results = hybrid_search_cases(user_query)
+
+        # --- Step 2: Build context for AI ---
+        context_text = ""
+        citations = []
+        for r in results:
+            doc_title = r["title"]
+            doc_snippet = r["full_text"][:1000] if r.get("full_text") else r.get("summary", "")
+            context_text += f"\n\nDocument: {doc_title}\n{doc_snippet}"
+            citations.append(doc_title)
+
+        prompt = f"""
+You are a legal research assistant. Only answer using the following documents. 
+Do not make up information. Always cite the sources.
+
+Documents:
+{context_text}
+
+Question: {user_query}
+
+Provide a concise answer and list citations in format [Case Title].
+"""
+
+        # --- Step 3: Generate AI answer ---
+        # Replace this with your actual LLM call, e.g., OpenAI or HuggingFace
+        answer = generate_chat_response(prompt)  # You already have this helper
+
+        # --- Step 4: Save chat history ---
+        save_chat_message(conversation_id, 'user', user_query)
+        save_chat_message(conversation_id, 'assistant', answer)
+
+        return jsonify({
+            "answer": answer,
+            "citations": citations,
+            "conversation_id": conversation_id,
+            "timestamp": datetime.now().isoformat()
+        })
+
+    except Exception as e:
+        print(f"RAG chat error: {e}")
+        return jsonify({"error": str(e)}), 500
+
 
 # =============================================================================
 # MOCK DATA (Fallback when database is not available)
