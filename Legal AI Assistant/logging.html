@@ -9,6 +9,24 @@
 </head>
 <body>
 
+    <div id="welcome-toast" class="welcome-toast large-sidebar">
+        <div class="toast-header">
+            <span class="toast-icon">✨</span>
+            <h3>Platform Overview</h3>
+        </div>
+        <div class="toast-body">
+            <p>Welcome to <strong>LegalAI Intelligence</strong>. Our suite is designed to streamline professional workflows:</p>
+            <ul class="feature-list">
+                <li><strong>Legal:</strong> AI Case Law Research</li>
+                <li><strong>Tax:</strong> Compliance & Treaty Analysis</li>
+                <li><strong>Audit:</strong> Risk & Verification Tools</li>
+                <li><strong>Accounting:</strong> Financial Reporting AI</li>
+            </ul>
+            <p class="toast-footer">Select a portal to begin your specialized session.</p>
+        </div>
+        <div class="toast-progress"></div>
+    </div>
+
     <header id="app-header" style="display: none;">
         <div class="header-logo">
             ⚖ LegalAI <span>| Workspace</span>
@@ -54,22 +72,22 @@
     <div class="role-grid">
         <div class="role-card" onclick="openModal('legal')">
             <div class="role-icon">⚖️</div>
-            <h3>Legal Professionals</h3>
+            <h3>Legal <br> Professionals</h3>
             <p>Case law & Precedents</p>
         </div>
         <div class="role-card" onclick="openModal('tax')">
             <div class="role-icon">📜</div>
-            <h3>Tax Professionals</h3>
+            <h3>Tax <br> Professionals</h3>
             <p>Compliance & Treaties</p>
         </div>
         <div class="role-card" onclick="openModal('audit')">
             <div class="role-icon">🔍</div>
-            <h3>Audit Professionals</h3>
+            <h3>Audit <br> Professionals</h3>
             <p>Risk & Verification</p>
         </div>
         <div class="role-card" onclick="openModal('accounting')">
             <div class="role-icon">📊</div>
-            <h3>Accounting Professionals</h3>
+            <h3>Accounting <br> Professionals</h3>
             <p>Financial Reporting</p>
         </div>
     </div>

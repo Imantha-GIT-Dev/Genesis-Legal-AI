@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Helper: Formats the email prefix into a clean Display Name
-     * e.g., "john.doe@email.com" -> "John Doe"
      */
     function formatDisplayName(email) {
         if (!email) return "User";
@@ -27,22 +26,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
+     * Large Sidebar Welcome Card: 
+     * Slides in, blurs background, and disappears after 10s
+     */
+    function showWelcomeToast() {
+        const toast = document.getElementById('welcome-toast');
+        const workspace = document.getElementById('workspace');
+        const header = document.getElementById('app-header');
+        
+        if (!toast) return;
+
+        // 1. Reset visibility and slide in + blur
+        toast.style.opacity = '1';
+        setTimeout(() => {
+            toast.classList.add('show');
+            if (workspace) workspace.classList.add('blur-active');
+            if (header) header.classList.add('blur-active');
+        }, 600);
+
+        // 2. Fade away, slide out, and remove blur after 10 seconds
+        setTimeout(() => {
+            toast.style.opacity = '0'; // Starts fading
+            toast.classList.remove('show'); // Slides back out
+            
+            // Remove blur from background elements
+            if (workspace) workspace.classList.remove('blur-active');
+            if (header) header.classList.remove('blur-active');
+            
+            // Reset opacity for the next login session
+            setTimeout(() => { 
+                toast.style.opacity = '1'; 
+            }, 1000);
+        }, 10000); // 10 seconds
+    }
+
+    /**
      * UI Transition: Handles the switch from Login Screen to Dashboard
      */
     function enterApp(email) {
-        // 1. Switch body from 'flex' (centering) to 'block' (dashboard scrolling)
         document.body.style.display = "block"; 
         document.body.classList.add('logged-in');
 
-        // 2. Hide Login Interface
         if (loginContainer) loginContainer.style.display = 'none';
-        
-        // 3. Reveal Header and Workspace
         if (appHeader) appHeader.style.display = 'flex';
         if (workspace) workspace.style.display = 'block'; 
         
-        // 4. Personalize the Header
         if (userEmailSpan) userEmailSpan.innerText = formatDisplayName(email);
+
+        showWelcomeToast();
     }
 
     // Toggle logic for Login vs Signup
@@ -100,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Logout Logic
     if (logoutBtn) {
         logoutBtn.onclick = () => {
             localStorage.clear();
@@ -108,19 +138,17 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Session Check: Auto-login if token exists
     const token = localStorage.getItem('token');
     const email = localStorage.getItem('email');
     if (token && email) {
         enterApp(email);
     } else {
-        // Ensure body remains flex for login screen centering if no session exists
         document.body.style.display = "flex";
     }
 });
 
 // =============================================================================
-// GLOBAL MODAL LOGIC (Accessible by onclick in HTML)
+// GLOBAL MODAL LOGIC
 // =============================================================================
 
 const roleData = {
@@ -160,7 +188,6 @@ function closeModal() {
     document.getElementById('modal-overlay').style.display = 'none';
 }
 
-// Close modal if user clicks on the blurred background
 window.onclick = function(event) {
     const overlay = document.getElementById('modal-overlay');
     if (event.target == overlay) {
