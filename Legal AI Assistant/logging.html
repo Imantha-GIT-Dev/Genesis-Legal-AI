@@ -5,9 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unlock Legal Insights</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Modern UI Hover Effects for the new Workspace */
+        .benefit-card {
+            background: #fff; 
+            padding: 30px 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            text-align: center; 
+            border-top: 5px solid #FF8C00;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .benefit-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .btn-action {
+            padding: 14px 30px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+        }
+        .btn-primary { background: #764ba2; color: white; border: none; }
+        .btn-secondary { background: #fff; color: #764ba2; border: 2px solid #764ba2; }
+        .btn-action:hover { opacity: 0.9; transform: scale(1.03); }
+    </style>
 </head>
 <body>
 
@@ -53,8 +80,44 @@
         </div>
     </div>
 
+    <main id="workspace" style="display: none; padding: 60px 20px; max-width: 1100px; margin: 0 auto;">
+        <section style="text-align: center; margin-bottom: 60px;">
+            <h1 style="color: #1a2a6c; font-size: 3rem; font-weight: 700; margin-bottom: 15px; letter-spacing: -1px;">
+                Welcome to Your Legal Intelligence Suite
+            </h1>
+            <p style="color: #555; font-size: 2.25rem; font-weight: 300;">What would you like to do today?</p>
+        </section>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 25px; margin-bottom: 60px;">
+            <div class="benefit-card">
+                <div style="font-size: 2.5rem; margin-bottom: 15px;">🎯</div>
+                <h3 style="color: #333; margin-bottom: 10px;">Accuracy</h3>
+                <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Verified precedents and cross-referenced case law for maximum reliability.</p>
+            </div>
+            <div class="benefit-card">
+                <div style="font-size: 2.5rem; margin-bottom: 15px;">💰</div>
+                <h3 style="color: #333; margin-bottom: 10px;">Cost</h3>
+                <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Drastically reduce billable research hours by automating routine tasks.</p>
+            </div>
+            <div class="benefit-card">
+                <div style="font-size: 2.5rem; margin-bottom: 15px;">⚡</div>
+                <h3 style="color: #333; margin-bottom: 10px;">Speed</h3>
+                <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Get complex legal analysis in seconds instead of days or weeks.</p>
+            </div>
+            <div class="benefit-card">
+                <div style="font-size: 2.5rem; margin-bottom: 15px;">🧩</div>
+                <h3 style="color: #333; margin-bottom: 10px;">Flexibility</h3>
+                <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Custom research parameters tailored to your specific jurisdiction.</p>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+            <button class="btn-action btn-primary">🔍 Search Legal Cases</button>
+            <button class="btn-action btn-secondary">📂 Analyze Document</button>
+        </div>
+    </main>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="auth.js"></script>
 
 </body>

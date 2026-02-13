@@ -12,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSubmit = document.getElementById('btn-submit');
     const toggleTextContainer = document.getElementById('toggle-text');
     const logoutBtn = document.getElementById('btn-logout');
+    // NEW: Select the Workspace div
+    const workspace = document.getElementById('workspace');
 
     let isLoginMode = true;
 
@@ -24,8 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. UI Transition: Enter the Workspace
     function enterApp(email) {
+        // RESET BODY: This ensures the dashboard doesn't stay centered in the middle of the screen
+        document.body.style.display = "block"; 
+
         if (loginContainer) loginContainer.style.display = 'none';
         if (appHeader) appHeader.style.display = 'flex';
+        
+        // NEW: Make the Welcome Dashboard visible
+        if (workspace) workspace.style.display = 'block'; 
+        
         if (userEmailSpan) userEmailSpan.innerText = formatDisplayName(email);
     }
 
@@ -45,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? 'Don\'t have an account? <a href="#" id="btn-toggle" class="signup-link">Sign up</a>'
                 : 'Already have an account? <a href="#" id="btn-toggle" class="signup-link">Log In</a>';
             
-            // Re-bind the listener because we replaced the HTML content
             setupToggle(); 
         };
     }
