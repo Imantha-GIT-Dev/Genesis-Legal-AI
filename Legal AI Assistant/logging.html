@@ -3,51 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unlock Legal Insights</title>
-    
+    <title>Unlock Legal Insights | Workspace</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* Modern UI Hover Effects for the new Workspace */
-        .benefit-card {
-            background: #fff; 
-            padding: 30px 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            text-align: center; 
-            border-top: 5px solid #FF8C00;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .benefit-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        .btn-action {
-            padding: 14px 30px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            transition: all 0.3s;
-            font-family: 'Poppins', sans-serif;
-        }
-        .btn-primary { background: #764ba2; color: white; border: none; }
-        .btn-secondary { background: #fff; color: #764ba2; border: 2px solid #764ba2; }
-        .btn-action:hover { opacity: 0.9; transform: scale(1.03); }
-    </style>
 </head>
 <body>
 
-    <header id="app-header" style="display: none; padding: 15px 40px; justify-content: space-between; align-items: center; background: #fff; border-bottom: 1px solid #ddd; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
-        <div style="font-weight: 600; color: #764ba2; font-size: 1.2rem;">
-            ⚖ LegalAI <span style="font-weight: 300; color: #aaa; margin-left: 10px; font-size: 0.9rem;">| Workspace</span>
+    <header id="app-header" style="display: none;">
+        <div class="header-logo">
+            ⚖ LegalAI <span>| Workspace</span>
         </div>
-        
-        <div>
-            <span style="color: #666; font-size: 0.95rem;">Welcome, <b id="user-email" style="color: #333;">User</b></span>
-            <button id="btn-logout" style="margin-left: 15px; padding: 6px 15px; cursor: pointer; border: 1px solid #ff4d4d; color: #ff4d4d; background: transparent; border-radius: 20px; font-weight: 500; transition: all 0.3s;">
-                Log Out
-            </button>
+        <div class="header-user">
+            <span>Welcome, <b id="user-email">User</b></span>
+            <button id="btn-logout">Log Out</button>
         </div>
     </header>
 
@@ -57,22 +25,17 @@
                 <div class="logo-icon">⚖</div>
                 <h2 id="form-title">Unlock Legal Insights</h2>
             </div>
-
             <form class="login-form" id="auth-form" autocomplete="off">
                 <div class="input-group">
                     <label for="email">Email Address</label>
-                    <input type="email" id="email" autocomplete="off" required>
+                    <input type="email" id="email" required>
                 </div>
-
                 <div class="input-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" autocomplete="new-password" required>
+                    <input type="password" id="password" required>
                 </div>
-
                 <button type="submit" class="btn-login" id="btn-submit">Log In</button>
-
-                <p id="error-msg" style="color: #d93025; font-size: 0.9rem; margin-top: 15px; display: none;"></p>
-
+                <p id="error-msg"></p>
                 <div class="form-footer">
                     <p id="toggle-text">Don't have an account? <a href="#" id="btn-toggle" class="signup-link">Sign up</a></p>
                 </div>
@@ -80,45 +43,49 @@
         </div>
     </div>
 
-    <main id="workspace" style="display: none; padding: 60px 20px; max-width: 1100px; margin: 0 auto;">
-        <section style="text-align: center; margin-bottom: 60px;">
-            <h1 style="color: #1a2a6c; font-size: 3rem; font-weight: 700; margin-bottom: 15px; letter-spacing: -1px;">
-                Welcome to Your Legal Intelligence Suite
-            </h1>
-            <p style="color: #555; font-size: 2.25rem; font-weight: 300;">What would you like to do today?</p>
-        </section>
+   <main id="workspace" style="display: none;">
+    <section class="welcome-section">
+        <h1>Professional Intelligence Suite</h1>
+        <p>Select your specialized portal to continue</p>
+    </section>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 25px; margin-bottom: 60px;">
-            <div class="benefit-card">
-                <div style="font-size: 2.5rem; margin-bottom: 15px;">🎯</div>
-                <h3 style="color: #333; margin-bottom: 10px;">Accuracy</h3>
-                <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Verified precedents and cross-referenced case law for maximum reliability.</p>
-            </div>
-            <div class="benefit-card">
-                <div style="font-size: 2.5rem; margin-bottom: 15px;">💰</div>
-                <h3 style="color: #333; margin-bottom: 10px;">Cost</h3>
-                <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Drastically reduce billable research hours by automating routine tasks.</p>
-            </div>
-            <div class="benefit-card">
-                <div style="font-size: 2.5rem; margin-bottom: 15px;">⚡</div>
-                <h3 style="color: #333; margin-bottom: 10px;">Speed</h3>
-                <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Get complex legal analysis in seconds instead of days or weeks.</p>
-            </div>
-            <div class="benefit-card">
-                <div style="font-size: 2.5rem; margin-bottom: 15px;">🧩</div>
-                <h3 style="color: #333; margin-bottom: 10px;">Flexibility</h3>
-                <p style="font-size: 0.95rem; color: #666; line-height: 1.6;">Custom research parameters tailored to your specific jurisdiction.</p>
-            </div>
-        </div>
+    <div class="dashboard-spacer"></div>
 
-        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-            <button class="btn-action btn-primary">🔍 Search Legal Cases</button>
-            <button class="btn-action btn-secondary">📂 Analyze Document</button>
+    <div class="role-grid">
+        <div class="role-card" onclick="openModal('legal')">
+            <div class="role-icon">⚖️</div>
+            <h3>Legal Professionals</h3>
+            <p>Case law & Precedents</p>
         </div>
-    </main>
+        <div class="role-card" onclick="openModal('tax')">
+            <div class="role-icon">📜</div>
+            <h3>Tax Professionals</h3>
+            <p>Compliance & Treaties</p>
+        </div>
+        <div class="role-card" onclick="openModal('audit')">
+            <div class="role-icon">🔍</div>
+            <h3>Audit Professionals</h3>
+            <p>Risk & Verification</p>
+        </div>
+        <div class="role-card" onclick="openModal('accounting')">
+            <div class="role-icon">📊</div>
+            <h3>Accounting Professionals</h3>
+            <p>Financial Reporting</p>
+        </div>
+    </div>
+</main>
+
+    <div id="modal-overlay" class="modal-overlay">
+        <div class="modal-card">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div id="modal-icon"></div>
+            <h2 id="modal-title"></h2>
+            <p id="modal-description"></p>
+            <button class="btn-login portal-btn">Enter Portal</button>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
-
 </body>
 </html>
