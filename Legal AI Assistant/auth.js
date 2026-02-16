@@ -33,28 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const toast = document.getElementById('welcome-toast');
         const workspace = document.getElementById('workspace');
         const header = document.getElementById('app-header');
-        const arrow = document.querySelector('.next-page-arrow'); // Select the forward arrow
+        const arrow = document.querySelector('.next-page-arrow'); 
         
         if (!toast) return;
 
-        // 1. Reset visibility and slide in + blur everything
         toast.style.opacity = '1';
         setTimeout(() => {
             toast.classList.add('show');
             if (workspace) workspace.classList.add('blur-active');
             if (header) header.classList.add('blur-active');
-            if (arrow) arrow.classList.add('blur-active'); // Blur the arrow
+            if (arrow) arrow.classList.add('blur-active'); 
         }, 600);
 
-        // 2. Fade away, slide out, and remove blur after 10 seconds
         setTimeout(() => {
             toast.style.opacity = '0'; 
             toast.classList.remove('show'); 
             
-            // Remove blur from background elements and arrow
             if (workspace) workspace.classList.remove('blur-active');
             if (header) header.classList.remove('blur-active');
-            if (arrow) arrow.classList.remove('blur-active'); // Clear arrow blur
+            if (arrow) arrow.classList.remove('blur-active'); 
             
             setTimeout(() => { 
                 toast.style.opacity = '1'; 
@@ -73,7 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (appHeader) appHeader.style.display = 'flex';
         if (workspace) workspace.style.display = 'block'; 
         
-        if (userEmailSpan) userEmailSpan.innerText = formatDisplayName(email);
+        // Use formatted name for the workspace display
+        const displayName = formatDisplayName(email);
+        if (userEmailSpan) userEmailSpan.innerText = displayName;
 
         // --- PREVENT DUPLICATE TOAST LOGIC ---
         const toastAlreadyShown = sessionStorage.getItem('welcomeShown');
@@ -125,6 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isLoginMode) {
                     localStorage.setItem('token', result.access_token);
                     localStorage.setItem('email', result.user.email);
+                    
+                    // --- MODIFIED: Save formatted name to be picked up by Genesis.html ---
+                    const displayName = formatDisplayName(result.user.email);
+                    localStorage.setItem('username', displayName);
+                    
                     enterApp(result.user.email);
                 } else {
                     alert("Registration successful! Please log in.");
@@ -194,7 +198,8 @@ function openModal(role) {
 
     const portalBtn = document.querySelector('.portal-btn');
     if (portalBtn) {
-        portalBtn.onclick = () => window.location.href = 'genesis-legal-ENTERPRISE.html';
+        // Updated to match your filename
+        portalBtn.onclick = () => window.location.href = 'Genesis.html';
     }
 }
 
@@ -216,15 +221,14 @@ function closeToast() {
     const toast = document.getElementById('welcome-toast');
     const workspace = document.getElementById('workspace');
     const header = document.getElementById('app-header');
-    const arrow = document.querySelector('.next-page-arrow'); // Select arrow
+    const arrow = document.querySelector('.next-page-arrow'); 
 
     if (toast) {
         toast.style.opacity = '0';
         toast.classList.remove('show');
     }
 
-    // Remove all blurs
     if (workspace) workspace.classList.remove('blur-active');
     if (header) header.classList.remove('blur-active');
-    if (arrow) arrow.classList.remove('blur-active'); // Clear arrow blur
+    if (arrow) arrow.classList.remove('blur-active'); 
 }

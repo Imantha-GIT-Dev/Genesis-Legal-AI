@@ -156,12 +156,34 @@
             const [searchQuery, setSearchQuery] = useState('');
             const [searchResults, setSearchResults] = useState([]);
             const [chatMessages, setChatMessages] = useState([]);
+            const [userName, setUserName] = useState("");
             const [stats, setStats] = useState({
                 totalCases: 125,
                 totalSearches: 1240,
                 documentsAnalyzed: 89,
                 savedResearch: 34
             });
+
+            useEffect(() => {
+                // MODIFIED: Checks all common storage keys to find the name
+                const storedUser = localStorage.getItem('username') || 
+                                 localStorage.getItem('user') || 
+                                 localStorage.getItem('loggedInUser');
+                
+                if (storedUser) {
+                    setUserName(storedUser);
+                } else {
+                    setUserName("Guest User");
+                }
+            }, []);
+
+            // MODIFIED: Improved Initial Logic
+            const getInitials = (name) => {
+                if (!name || name === "Guest User") return "GU";
+                const parts = name.trim().split(' ');
+                if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+                return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+            };
 
             // CoCounsel Skills
             const skills = [
@@ -381,10 +403,11 @@
             };
 
             // Header Component
-            const Header = () => (
+           const Header = () => (
                 <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-                    <div className="max-w-7xl mx-auto px-6 py-4">
+                    <div className="w-full px-6 py-4">
                         <div className="flex items-center justify-between">
+                            {/* Left Side corner */}
                             <div className="flex items-center space-x-4">
                                 <div className="w-12 h-12 bg-[#764ba2] rounded-lg flex items-center justify-center shadow-sm">
                                     <span className="text-2xl font-bold text-white">G</span>
@@ -394,15 +417,24 @@
                                     <p className="text-xs font-semibold text-[#764ba2] uppercase tracking-wider">Enterprise Research Platform</p>
                                 </div>
                             </div>
+
+                            {/* Right Side corner - Dynamic */}
                             <div className="flex items-center space-x-4">
-                                <button className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition font-medium">🔔 Notifications</button>
-                                <div className="w-10 h-10 bg-[#764ba2] rounded-full flex items-center justify-center font-bold text-white shadow-md">JD</div>
+                                <div className="text-right mr-2 hidden md:block">
+                                    <p className="text-sm font-bold text-gray-800 leading-none">{userName}</p>
+                                    <p className="text-[10px] text-green-500 font-bold uppercase tracking-widest mt-1">● Online</p>
+                                </div>
+                                <button className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition font-medium">
+                                    🔔
+                                </button>
+                                <div title={userName} className="w-10 h-10 bg-[#764ba2] rounded-full flex items-center justify-center font-bold text-white shadow-md cursor-pointer hover:scale-105 transition-all">
+                                    {getInitials(userName)}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </header>
             );
-
             // Navigation
            const Navigation = () => {
                 const tabs = [
