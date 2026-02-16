@@ -16,15 +16,23 @@
             font-family: 'Inter', sans-serif;
         }
         html, body {
-         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-         background-attachment: fixed !important;
-         min-height: 100vh !important;
-        margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background-attachment: fixed !important;
+            min-height: 100vh !important;
+            display: flex;
+            flex-direction: column;
         }
 
         #root, .min-h-screen {
          background: transparent !important;
           background-color: transparent !important;
+        }
+
+        #root {
+            background: transparent !important;
+            display: flex;
+            flex-direction: column;
+            flex: 1 0 auto; 
         }
         
         .gradient-orange {
@@ -132,6 +140,65 @@
             100% { box-shadow: 0 0 10px rgba(118, 75, 162, 0.4); }
         }
 
+        /* --- Footer Layout Fix for Enterprise Page --- */
+        .app-footer {
+            width: 100%;
+            padding: 25px 50px;
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            position: relative;
+            z-index: 10;
+            margin-top: 50px; /* Space between dashboard and footer */
+        }
+
+        .footer-content {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-left { display: flex; gap: 30px; }
+        .footer-left a { color: rgba(255, 255, 255, 0.6); text-decoration: none; transition: all 0.3s ease; }
+        .footer-left a:hover { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+
+        .footer-right { display: flex; align-items: center; gap: 40px; }
+        .footer-right p { margin: 0; }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #00ff88;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #00ff88;
+        }
+        
+        /* Flexbox fix for body to push footer down */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        #root {
+            flex: 1 0 auto; /* This allows the React content to take up available space */
+        }
+
     </style>
 </head>
 <body class="bg-gray-50">
@@ -141,6 +208,21 @@
         <span class="arrow-icon">⬅</span>
         <span class="arrow-text">Workspace</span>
     </a>
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div class="footer-left">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Support</a>
+            </div>
+            <div class="footer-right">
+                <p>&copy; 2026 <strong>LegalAI Intelligence</strong></p>
+                <div class="status-indicator">
+                    <span class="status-dot"></span> System Operational
+                </div>
+            </div>
+        </div>
+    </footer>  
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;

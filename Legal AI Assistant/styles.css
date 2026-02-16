@@ -402,3 +402,68 @@ body:has(#login-container:not([style*="display: none"])) .next-page-arrow {
 .no-blur {
     filter: none !important;
 }
+
+/* --- Footer Layout Fix --- */
+.app-footer {
+    width: 100%;
+    padding: 25px 50px; /* Increased padding for a corner-to-corner feel */
+    background: rgba(255, 255, 255, 0.03); 
+    backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    margin-top: auto;
+}
+
+.footer-content {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* This pushes left and right groups apart */
+    align-items: center;
+}
+
+/* Left Group: Links */
+.footer-left {
+    display: flex;
+    gap: 30px; /* Spacing between links */
+}
+
+.footer-left a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 400;
+}
+
+.footer-left a:hover {
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+/* Right Group: Copyright & Status */
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 40px; /* Spacing between Copyright and Status */
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 255, 136, 0.1);
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    color: #00ff88;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #00ff88;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #00ff88;
+}

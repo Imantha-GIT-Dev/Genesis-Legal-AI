@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const toggleTextContainer = document.getElementById('toggle-text');
     const logoutBtn = document.getElementById('btn-logout');
     const workspace = document.getElementById('workspace');
+    const appFooter = document.querySelector('.app-footer'); 
 
     let isLoginMode = true;
 
@@ -26,8 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Large Sidebar Welcome Card: 
-     * Slides in, blurs background + arrow, and disappears after 10s
+     * Large Sidebar Welcome Card logic
      */
     function showWelcomeToast() {
         const toast = document.getElementById('welcome-toast');
@@ -63,20 +63,18 @@ document.addEventListener('DOMContentLoaded', () => {
      * UI Transition: Handles the switch from Login Screen to Dashboard
      */
     function enterApp(email) {
-        document.body.style.display = "block"; 
+        document.body.style.display = "flex"; 
         document.body.classList.add('logged-in');
 
         if (loginContainer) loginContainer.style.display = 'none';
         if (appHeader) appHeader.style.display = 'flex';
         if (workspace) workspace.style.display = 'block'; 
-        
-        // Use formatted name for the workspace display
+        if (appFooter) appFooter.style.display = 'block'; 
+
         const displayName = formatDisplayName(email);
         if (userEmailSpan) userEmailSpan.innerText = displayName;
 
-        // --- PREVENT DUPLICATE TOAST LOGIC ---
         const toastAlreadyShown = sessionStorage.getItem('welcomeShown');
-        
         if (!toastAlreadyShown) {
             showWelcomeToast();
             sessionStorage.setItem('welcomeShown', 'true');
@@ -124,11 +122,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isLoginMode) {
                     localStorage.setItem('token', result.access_token);
                     localStorage.setItem('email', result.user.email);
-                    
-                    // --- MODIFIED: Save formatted name to be picked up by Genesis.html ---
                     const displayName = formatDisplayName(result.user.email);
                     localStorage.setItem('username', displayName);
-                    
                     enterApp(result.user.email);
                 } else {
                     alert("Registration successful! Please log in.");
@@ -147,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.onclick = () => {
             localStorage.clear();
             sessionStorage.removeItem('welcomeShown');
+            if (appFooter) appFooter.style.display = 'none'; 
             location.reload();
         };
     }
@@ -157,6 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         enterApp(email);
     } else {
         document.body.style.display = "flex";
+        if (appFooter) appFooter.style.display = 'none'; 
     }
 });
 
@@ -165,26 +162,10 @@ document.addEventListener('DOMContentLoaded', () => {
 // =============================================================================
 
 const roleData = {
-    legal: { 
-        title: "Legal Professionals", 
-        icon: "⚖️", 
-        desc: "Harness AI-driven research to analyze case law, statutes, and legal precedents with pinpoint accuracy." 
-    },
-    tax: { 
-        title: "Tax Professionals", 
-        icon: "📜", 
-        desc: "Stay ahead of regulatory changes with specialized tools for tax compliance and cross-border analysis." 
-    },
-    audit: { 
-        title: "Audit Professionals", 
-        icon: "🔍", 
-        desc: "Enhance risk detection and verification workflows using intelligent data auditing and reporting modules." 
-    },
-    accounting: { 
-        title: "Accounting Professionals", 
-        icon: "📊", 
-        desc: "Optimize financial accuracy with advanced forensic accounting and automated reporting tools." 
-    }
+    legal: { title: "Legal Professionals", icon: "⚖️", desc: "Harness AI-driven research to analyze case law, statutes, and legal precedents." },
+    tax: { title: "Tax Professionals", icon: "📜", desc: "Stay ahead of regulatory changes with specialized tools for tax compliance." },
+    audit: { title: "Audit Professionals", icon: "🔍", desc: "Enhance risk detection and verification workflows using intelligent data auditing." },
+    accounting: { title: "Accounting Professionals", icon: "📊", desc: "Optimize financial accuracy with advanced forensic accounting tools." }
 };
 
 function openModal(role) {
@@ -198,7 +179,6 @@ function openModal(role) {
 
     const portalBtn = document.querySelector('.portal-btn');
     if (portalBtn) {
-        // Updated to match your filename
         portalBtn.onclick = () => window.location.href = 'Genesis.html';
     }
 }
@@ -209,14 +189,9 @@ function closeModal() {
 
 window.onclick = function(event) {
     const overlay = document.getElementById('modal-overlay');
-    if (event.target == overlay) {
-        closeModal();
-    }
+    if (event.target == overlay) { closeModal(); }
 }
 
-/**
- * Manual close function for the Toast
- */
 function closeToast() {
     const toast = document.getElementById('welcome-toast');
     const workspace = document.getElementById('workspace');
