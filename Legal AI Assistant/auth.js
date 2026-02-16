@@ -27,37 +27,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Large Sidebar Welcome Card: 
-     * Slides in, blurs background, and disappears after 10s
+     * Slides in, blurs background + arrow, and disappears after 10s
      */
     function showWelcomeToast() {
         const toast = document.getElementById('welcome-toast');
         const workspace = document.getElementById('workspace');
         const header = document.getElementById('app-header');
+        const arrow = document.querySelector('.next-page-arrow'); // Select the forward arrow
         
         if (!toast) return;
 
-        // 1. Reset visibility and slide in + blur
+        // 1. Reset visibility and slide in + blur everything
         toast.style.opacity = '1';
         setTimeout(() => {
             toast.classList.add('show');
             if (workspace) workspace.classList.add('blur-active');
             if (header) header.classList.add('blur-active');
+            if (arrow) arrow.classList.add('blur-active'); // Blur the arrow
         }, 600);
 
         // 2. Fade away, slide out, and remove blur after 10 seconds
         setTimeout(() => {
-            toast.style.opacity = '0'; // Starts fading
-            toast.classList.remove('show'); // Slides back out
+            toast.style.opacity = '0'; 
+            toast.classList.remove('show'); 
             
-            // Remove blur from background elements
+            // Remove blur from background elements and arrow
             if (workspace) workspace.classList.remove('blur-active');
             if (header) header.classList.remove('blur-active');
+            if (arrow) arrow.classList.remove('blur-active'); // Clear arrow blur
             
-            // Reset opacity for the next login session
             setTimeout(() => { 
                 toast.style.opacity = '1'; 
             }, 1000);
-        }, 10000); // 10 seconds
+        }, 10000); 
     }
 
     /**
@@ -73,7 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (userEmailSpan) userEmailSpan.innerText = formatDisplayName(email);
 
-        showWelcomeToast();
+        // --- PREVENT DUPLICATE TOAST LOGIC ---
+        const toastAlreadyShown = sessionStorage.getItem('welcomeShown');
+        
+        if (!toastAlreadyShown) {
+            showWelcomeToast();
+            sessionStorage.setItem('welcomeShown', 'true');
+        }
     }
 
     // Toggle logic for Login vs Signup
@@ -134,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutBtn) {
         logoutBtn.onclick = () => {
             localStorage.clear();
+            sessionStorage.removeItem('welcomeShown');
             location.reload();
         };
     }
@@ -182,6 +191,11 @@ function openModal(role) {
     document.getElementById('modal-icon').innerText = data.icon;
     document.getElementById('modal-description').innerText = data.desc;
     document.getElementById('modal-overlay').style.display = 'flex';
+
+    const portalBtn = document.querySelector('.portal-btn');
+    if (portalBtn) {
+        portalBtn.onclick = () => window.location.href = 'genesis-legal-ENTERPRISE.html';
+    }
 }
 
 function closeModal() {
@@ -193,4 +207,24 @@ window.onclick = function(event) {
     if (event.target == overlay) {
         closeModal();
     }
+}
+
+/**
+ * Manual close function for the Toast
+ */
+function closeToast() {
+    const toast = document.getElementById('welcome-toast');
+    const workspace = document.getElementById('workspace');
+    const header = document.getElementById('app-header');
+    const arrow = document.querySelector('.next-page-arrow'); // Select arrow
+
+    if (toast) {
+        toast.style.opacity = '0';
+        toast.classList.remove('show');
+    }
+
+    // Remove all blurs
+    if (workspace) workspace.classList.remove('blur-active');
+    if (header) header.classList.remove('blur-active');
+    if (arrow) arrow.classList.remove('blur-active'); // Clear arrow blur
 }

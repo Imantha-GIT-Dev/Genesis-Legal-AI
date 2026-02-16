@@ -61,10 +61,71 @@
         .progress-bar {
             transition: width 1s ease-out;
         }
+
+        /* --- Floating Back Arrow: BIG & PURPLE --- */
+        .back-page-arrow {
+            position: fixed;
+            top: 50%;
+            left: 25px; /* Sits 25px away from the left edge */
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #764ba2 0%, #1a2a6c 100%); 
+            color: white;
+            padding: 18px 28px;
+            border-radius: 50px; /* Pill shape */
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(118, 75, 162, 0.4);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 9999;
+        }
+
+        .back-page-arrow .arrow-text {
+            max-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: max-width 0.5s ease;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .back-page-arrow .arrow-icon {
+            font-size: 1.5rem;
+        }
+
+        .back-page-arrow:hover {
+            transform: translateY(-50%) scale(1.08); /* Pops out slightly */
+            background: linear-gradient(135deg, #8e54e9 0%, #4776e6 100%);
+            box-shadow: 0 15px 40px rgba(118, 75, 162, 0.6);
+        }
+
+        .back-page-arrow:hover .arrow-text {
+            max-width: 200px; /* Slides out the word 'Workspace' */
+        }
+
+        /* Continuous purple pulse animation */
+        .back-page-arrow {
+            animation: purple-glow 3s infinite;
+        }
+
+        @keyframes purple-glow {
+            0% { box-shadow: 0 0 10px rgba(118, 75, 162, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(118, 75, 162, 0.7); }
+            100% { box-shadow: 0 0 10px rgba(118, 75, 162, 0.4); }
+        }
+
     </style>
 </head>
 <body class="bg-gray-50">
     <div id="root"></div>
+
+    <a href="logging.html" class="back-page-arrow" title="Back to Workspace">
+        <span class="arrow-icon">⬅</span>
+        <span class="arrow-text">Workspace</span>
+    </a>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
@@ -761,6 +822,7 @@
         }
 
         ReactDOM.render(<App />, document.getElementById('root'));
+        
     </script>
 </body>
 </html>
